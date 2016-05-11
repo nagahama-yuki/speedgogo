@@ -102,7 +102,7 @@
     </script>
 
     <script id="account.html" type="text/ng-template">
-      <ion-modal-view>
+      <ion-modal-view ng-controller="accountCtrl">
         <ion-header-bar>
           <h1 class="title">アカウント作成</h1>
           <button class="button button-clear button-stable" ng-click="account.hide()">Cancel</button>
@@ -115,7 +115,7 @@
             <label class="item item-input">
               <input type="password" placeholder="Password">
             </label>
-            <button class="button button-full button-positive">
+            <button class="button button-full button-positive" ng-click="test()">
               Submit
             </button>
           </div>
@@ -219,34 +219,50 @@
     </script>
 
     <script id="feed.html" type="text/ng-template">
-      <ion-view view-title="詳細入力" style="background:#568ebd;">
+      <ion-view view-title="詳細入力">
         <ion-content ng-init="mapInit()">
           
+          <div class="timeline">
+            <div class="pickupTimes">{{nowTime.getHours()}}時{{nowTime.getMinutes()}}分</div>
+            <div class="pickupTo">配送時間<br>約&nbsp;<span style="color:#4C8BF6;">{{ShareData.time}}</span></div>
+          </div>
+
           <div class="contents">
             <p class="bold">荷物の集荷場所</p>
-            <p>福岡県福岡市城南区長尾</p>
+            <p class="small"><span class="ion-ios-location-outline"></span>&nbsp;{{ShareData.pickup}}</p>
             <div class="contentsMap z-depth-1" id="mapField">
             </div>
-            <p>荷物の集荷の日付及び時間</p>
-            <button class="button button-clear button-light">
-              日付
-            </button>
-            <button class="button button-clear button-light">
-              時間
-            </button>
+
+            <button class="button button-clear button-positive">{{ShareData.time}}</button>
+            <button class="button button-clear button-positive">{{ShareData.distance}}</button>
+            <button class="button button-clear button-positive">{{ShareData.price}}</button>            
+            <!--img src="http://freeiconbox.com/icon/256/31520.png" style="display:block; margin:auto;" width="30%"-->
+
+          </div>
+
+          <div class="timeline">  
+            <div class="dropoffTimes">{{nowTime.getHours()}}時{{nowTime.getMinutes()}}分</div>
           </div>
 
           <div class="contents">
             <p class="bold">荷物の配達場所</p>
-            <p>福岡県福岡市城南区長尾</p>
-            <p>荷物の配達の日付及び時間</p>
-            <button class="button button-clear button-light">
-              日付
-            </button>
-            <button class="button button-clear button-light">
-              時間
-            </button>
+            <p class="small"><span class="ion-ios-location-outline"></span>&nbsp;{{ShareData.dropoff}}</p>
+            <div class="contentsMap z-depth-1" id="mapFieldsecond">
+            </div>
           </div>
+
+          <div class="illust">
+            <div class="circle" style="background:#27ae60;"></div>
+            <div class="long"></div>
+            <div class="circle" style="background:#e98b39;"></div>
+          </div>
+
+          
+
+          
+
+          
+
 
         </ion-content>
       </ion-view>
