@@ -467,30 +467,78 @@ angular.module('starter', ['ionic','ngCordova'])
 
 
 })
-.controller('accountCtrl', function($scope){
-    $scope.test = function(){
-        alert("start");
-        console.log("start");   
+.controller('accountCtrl', function($scope, ShareData){
+
+    $scope.checkId = function(){
+        var uniqueId = document.getElementById("uniqueId").value;
+        var stringPassword = document.getElementById("stringPassword").value;    
+        /*if(uniqueId == "" || stringPassword == ""){
+            console.log("j");
+        } else {
+            console.log("d");
+        }*/
         $.ajax({
             url: 'http://160.16.206.129:3000/users',
             type: 'POST',
             dataType: 'json',
             data: {
                 user: {
-                    email: "yuuki4104453@yahoo.co.jp",
-                    password: "172837812974"
+                    email: uniqueId,
+                    password: stringPassword
                 }
             },
             success: function(data){
-                console.log("success"); 
-                alert("success");
+                console.log(data);
+                $scope.tokenData = data;
+                tokenId = data.id;
+                tokenEmail = data.email;
+                tokenPass = data.crypted_password;
+                $scope.token();
             },
             error: function(data){
-                console.log("error"); 
-                alert("error");
+                console.log("error");
             }
         });
-    };
+
+        $scope.token = function(){
+            $.ajax({
+                url: 'http://160.16.206.129:3000/oauth/token.json',
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    grant_type: 'password',
+                    client_id: 'fed3f93ef9efe5e62f2b2b58c07e893725461fb32fa6e6141d799d2db9eee495',
+                    client_secret: '472c5a3d05752ad74bd2a1a038601994fb6ab9db91c69e76365c5bd2b0096c59',
+                    username: tokenEmail,
+                    password: stringPassword
+                },
+                success: function(data){
+                    console.log(data);
+                    accessToken = data.access_token;
+                    $scope.lust();
+                },
+                error: function(data){
+                    console.log("error");
+                }
+            });
+        };
+
+        $scope.lust = function(){
+            $.ajax({
+                url: 'http://160.16.206.129:3000/users' + '/' + tokenId + '?access_token=' + accessToken,
+                type: 'GET',
+                dataType: 'json',
+                success: function(responce){
+                    $("#accountInput, #accountTitle").fadeOut();
+                    $("#loginStatusOk").delay(100).fadeIn();
+                    console.log(responce.email + "さんこんにちは");
+                },
+                error: function(responce){
+                    console.log("error");
+                }
+                });
+            };
+        };
 })
 ;
 
