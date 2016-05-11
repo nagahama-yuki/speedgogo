@@ -104,20 +104,24 @@
     <script id="account.html" type="text/ng-template">
       <ion-modal-view ng-controller="accountCtrl">
         <ion-header-bar>
-          <h1 class="title">アカウント作成</h1>
+          <h1 class="title" id="accountTitle">アカウント作成</h1>
           <button class="button button-clear button-stable" ng-click="account.hide()">Cancel</button>
         </ion-header-bar>
         <ion-content>
-          <div class="list list-inset">
+          <div class="list list-inset" id="accountInput">
             <label class="item item-input">
-              <input type="text" placeholder="Email">
+              <input type="text" placeholder="Email" id="uniqueId">
             </label>
             <label class="item item-input">
-              <input type="password" placeholder="Password">
+              <input type="password" placeholder="Password" id="stringPassword">
             </label>
-            <button class="button button-full button-positive" ng-click="test()">
+            <button class="button button-full button-positive" ng-click="checkId()">
               Submit
             </button>
+          </div>
+
+          <div id="loginStatusOk" style="display:none;">
+            welcome to speedgogo!
           </div>
         </ion-content>
       </ion-modal-view>
