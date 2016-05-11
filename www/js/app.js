@@ -237,8 +237,10 @@ angular.module('starter', ['ionic','ngCordova'])
                     ShareData.time = data.routes[0].legs[0].duration.text;
                     var distance_mater = data.routes[0].legs[0].distance.value;
                     ShareData.price = Math.round(distance_mater * 0.3) + "円";
+                    location.href = "#/feed";
                 },
                 error: function(data){
+                    alert("計算できませんでした");
                 }
         });
     }
@@ -250,7 +252,6 @@ angular.module('starter', ['ionic','ngCordova'])
                 $scope.preview();
             } else if (index == 2){
                 resultOptions();
-                location.href = "#/detail";
             } else {
 
             }
@@ -339,7 +340,7 @@ angular.module('starter', ['ionic','ngCordova'])
 
 
 })  
-.controller('detailCtrl', function ($scope, ShareData, $cordovaActionSheet, $ionicHistory, $ionicModal) {
+/*.controller('detailCtrl', function ($scope, ShareData, $cordovaActionSheet, $ionicHistory, $ionicModal) {
 
     //StatusBar.styleLightContent();
     $scope.ShareData = ShareData;
@@ -421,18 +422,74 @@ angular.module('starter', ['ionic','ngCordova'])
 })
 .controller('optionCtrl', function($scope){
     $scope.text = "テスト";
-})
-.controller('feedCtrl', function($scope){
+})*/
+.controller('feedCtrl', function($scope, ShareData, $rootScope, $cordovaProgress){
+
+    var pickupmapDiv = "mapField";
+    var dropoffmapDiv = "mapFieldsecond";
     
     $scope.mapInit = function() {
-        var centerPosition = new google.maps.LatLng(35.656956, 139.695518);
-        var option = {
-            zoom : 12,
-            center : centerPosition,
-            mapTypeId : google.maps.MapTypeId.ROADMAP
+
+        $scope.onmap = function(locate, area){
+            $.ajax({
+                url: "https://maps.googleapis.com/maps/api/geocode/json?address=" + locate + "&sensor=false",
+                data: {name: "long_name"},
+                datatype: "json",
+                    success: function(data){
+                        var dataArray = data.results;
+                        geolocate = dataArray[0].geometry.location;
+                        var option = {
+                            zoom : 15,
+                            center : new google.maps.LatLng(geolocate.lat, geolocate.lng),
+                            mapTypeId : google.maps.MapTypeId.ROADMAP
+                        };
+                        //地図本体描画
+                        var pickupLongMap = new google.maps.Map(document.getElementById(area), option);
+                    },
+                    error: function(data){
+                        alert("住所の読み込みに失敗しました。");
+                    }
+            });
         };
-        //地図本体描画
-        var googlemap = new google.maps.Map(document.getElementById("mapField"), option);
+        ProgressIndicator.showDeterminate(false, 10000)
+        $scope.nowTime = new Date();
+        $scope.ShareData = ShareData;
+        $scope.onmap(pickupAddress, pickupmapDiv);
+        $scope.onmap(dropoffAddress, dropoffmapDiv);
+    
+    };
+
+    $rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams){
+        if(toState.templateUrl == "feed.html"){
+            $scope.mapInit();
+        }
+    });
+
+
+})
+.controller('accountCtrl', function($scope){
+    $scope.test = function(){
+        alert("start");
+        console.log("start");   
+        $.ajax({
+            url: 'http://160.16.206.129:3000/users',
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                user: {
+                    email: "yuuki4104453@yahoo.co.jp",
+                    password: "172837812974"
+                }
+            },
+            success: function(data){
+                console.log("success"); 
+                alert("success");
+            },
+            error: function(data){
+                console.log("error"); 
+                alert("error");
+            }
+        });
     };
 })
 ;
