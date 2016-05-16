@@ -3,7 +3,7 @@
 // angular.module is a global place for creating, registering and retrieving Angular modules
 // 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
-angular.module('starter', ['ionic','ngCordova'])
+angular.module('starter', ['ionic','ngCordova','firebase'])
 .run(function($ionicPlatform) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
@@ -423,10 +423,14 @@ angular.module('starter', ['ionic','ngCordova'])
 .controller('optionCtrl', function($scope){
     $scope.text = "テスト";
 })*/
-.controller('feedCtrl', function($scope, ShareData, $rootScope, $cordovaProgress){
+.controller('feedCtrl', function($scope, ShareData, $rootScope, $cordovaProgress, $cordovaActionSheet, $ionicModal, $firebaseArray){
+
+    var ref = new Firebase("https://fkhfaejfilejifencdjsjhfe.firebaseio.com");
+    $scope.reserveData = $firebaseArray(ref);
 
     var pickupmapDiv = "mapField";
     var dropoffmapDiv = "mapFieldsecond";
+    var modalMap = "modalMap";
     
     $scope.mapInit = function() {
 
@@ -441,7 +445,10 @@ angular.module('starter', ['ionic','ngCordova'])
                         var option = {
                             zoom : 15,
                             center : new google.maps.LatLng(geolocate.lat, geolocate.lng),
-                            mapTypeId : google.maps.MapTypeId.ROADMAP
+                            mapTypeId : google.maps.MapTypeId.ROADMAP,
+                            scrollwheel: false,
+                            disableDoubleClickZoom: true,
+                            draggable: false
                         };
                         //地図本体描画
                         var pickupLongMap = new google.maps.Map(document.getElementById(area), option);
@@ -451,13 +458,88 @@ angular.module('starter', ['ionic','ngCordova'])
                     }
             });
         };
-        ProgressIndicator.showDeterminate(false, 10000)
-        $scope.nowTime = new Date();
+        //ProgressIndicator.showDeterminate(false, 10000)
+        //$scope.nowTime = new Date();
+        var hours,minutes,ampm;
+        function AmPmChecker(date) {
+            hours = date.getHours();
+            minutes = date.getMinutes();
+            ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            var strTime = hours + ':' + minutes + ' ' + ampm;
+            return strTime;
+        }
+        $scope.nowTimeCheck = AmPmChecker(new Date());
         $scope.ShareData = ShareData;
         $scope.onmap(pickupAddress, pickupmapDiv);
         $scope.onmap(dropoffAddress, dropoffmapDiv);
     
     };
+
+    var option = {
+        title: 'この内容で予約をしますか?',
+        buttonLabels: ['宅配依頼'],
+        addCancelButtonWithLabel: 'Cancel',
+        androidEnableCancelButton : true,
+        winphoneEnableCancelButton : true
+        //addDestructiveButtonWithLabel : 'Delete it'
+    }; 
+    $scope.actionsheet = function(){
+        $cordovaActionSheet.show(option).then(function(btnIndex) {
+            var index = btnIndex;
+            if(index == 1){
+                $scope.addMessage();
+            } else {
+            }
+        });
+    };
+
+
+    $scope.addMessage = function() {
+        $scope.reserveData.$add({
+            from: {
+                from_name: "長浜",
+                from_address: ShareData.pickup,
+            },
+            to: {
+                to_name: "久野",
+                to_address: dropoffAddress,
+            },
+            info: {
+                distance: ShareData.distance,
+                price: ShareData.price,
+                time: ShareData.time,
+                date: new Date().getTime(),
+                date_real: new Date(new Date().getTime()).toLocaleString()
+            },
+            check: {
+                flag: "one"
+            }
+        });
+        $cordovaProgress.showDeterminateWithLabel(true, 50000, "宅配依頼中")
+        setTimeout(success, 6000);
+        setTimeout(successClose, 8000);
+        function success(){
+            $cordovaProgress.showSuccess(true, "Success!")
+            setTimeout(sendModal,1000);
+            function sendModal(){
+                $scope.sendModal.show();
+                $scope.onmap(pickupAddress, modalMap);
+            }
+        }
+        function successClose(){
+            $cordovaProgress.hide()
+        }
+    };
+
+      $ionicModal.fromTemplateUrl('sendModal.html', {
+        scope: $scope,
+        animation: 'slide-in-up'
+      }).then(function(modal) {
+        $scope.sendModal = modal;
+      });
 
     $rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams){
         if(toState.templateUrl == "feed.html"){
