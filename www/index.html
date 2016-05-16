@@ -28,6 +28,15 @@
 
     <!---->
     <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
+
+    <!-- angularFire-->
+    <!-- AngularJS -->
+    <!--script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script-->
+    <!-- Firebase -->
+    <script src="https://cdn.firebase.com/js/client/2.2.4/firebase.js"></script>
+    <!-- AngularFire -->
+    <script src="https://cdn.firebase.com/libs/angularfire/1.2.0/angularfire.min.js"></script>
+  
   </head>
   <body ng-app="starter">
 
@@ -151,19 +160,19 @@
 
     <script id="inputbar.html" type="text/ng-template">
       <ion-modal-view>
-      <div class="bar bar-header item-input-inset">
-        <label class="item-input-wrapper">
-          <i class="icon ion-ios-search placeholder-icon"></i>
-          <input type="search" placeholder="Search">
-        </label>
-        <button class="button button-clear" ng-click="inputbar.hide()">
-          Cancel
-        </button>
-      </div>
+        <div class="bar bar-header item-input-inset">
+          <label class="item-input-wrapper">
+            <i class="icon ion-ios-search placeholder-icon"></i>
+            <input type="search" placeholder="Search">
+          </label>
+          <button class="button button-clear" ng-click="inputbar.hide()">
+            Cancel
+          </button>
+        </div>
       </ion-modal-view>
     </script>
 
-    <script id="detail.html" type="text/ng-template">
+    <!--script id="detail.html" type="text/ng-template">
       <ion-view view-title="詳細入力">
         <ion-nav-bar class="bar-energized">
           <ion-nav-back-button ng-click="myGoBack()"></ion-nav-back-button>
@@ -208,50 +217,47 @@
             </div>
         </ion-content>
       </ion-view>
-    </script>
+    </script-->
 
-    <script id="option.html" type="text/ng-template">
+    <!--script id="option.html" type="text/ng-template">
       <ion-modal-view ng-controller="optionCtrl" style="width:100%; height:50%; top:40%; left:0%; right:0; bottom:0%; padding-top:50px;">
-        <!--ion-header-bar style="background:none; border:none;">
-          <h1 class="title"></h1>
-          <button class="button button-icon icon ion-ios-close-empty" ng-click="option.hide()"></button>
-        </ion-header-bar>
-        <ion-content-->
         <button class="button button-icon icon ion-ios-close-empty" ng-click="option.hide()" style="position:absolute; top:5px; right:10px;"></button>
         {{text}}{{ShareData.pickup}}
       </ion-modal-view>
-    </script>
+    </script-->
 
     <script id="feed.html" type="text/ng-template">
       <ion-view view-title="詳細入力">
-        <ion-content ng-init="mapInit()">
+        <ion-content class="feedContent" ng-init="mapInit()">
           
           <div class="timeline">
-            <div class="pickupTimes">{{nowTime.getHours()}}時{{nowTime.getMinutes()}}分</div>
-            <div class="pickupTo">配送時間<br>約&nbsp;<span style="color:#4C8BF6;">{{ShareData.time}}</span></div>
+            <div class="pickupTimes">{{nowTimeCheck}}</div>
+            <div class="pickupTo"><span class="big bold">{{ShareData.time}}</span>&nbsp;<br>前後で配送</div>
           </div>
 
           <div class="contents">
             <p class="bold">荷物の集荷場所</p>
-            <p class="small"><span class="ion-ios-location-outline"></span>&nbsp;{{ShareData.pickup}}</p>
-            <div class="contentsMap z-depth-1" id="mapField">
+            <p class="small">{{nowTimeCheck}}&nbsp;前後にお荷物の集荷に伺います</p>
+            <p class="small"><span class="ion-ios-location-outline" style="color:#27ae60;"></span>&nbsp;{{ShareData.pickup}}</p>
+            <div class="contentsMap" id="mapField"><i class="ion-record" style="color:#27ae60;"></i>
             </div>
 
             <button class="button button-clear button-positive">{{ShareData.time}}</button>
             <button class="button button-clear button-positive">{{ShareData.distance}}</button>
-            <button class="button button-clear button-positive">{{ShareData.price}}</button>            
-            <!--img src="http://freeiconbox.com/icon/256/31520.png" style="display:block; margin:auto;" width="30%"-->
+            <button class="button button-clear button-positive">{{ShareData.price}}</button>
 
+            <div class="border"></div>            
+            <!--img src="http://freeiconbox.com/icon/256/31520.png" style="display:block; margin:auto;" width="30%"-->
           </div>
 
           <div class="timeline">  
-            <div class="dropoffTimes">{{nowTime.getHours()}}時{{nowTime.getMinutes()}}分</div>
+            <div class="dropoffTimes">{{nowTimeCheck}}</div>
           </div>
 
           <div class="contents">
             <p class="bold">荷物の配達場所</p>
-            <p class="small"><span class="ion-ios-location-outline"></span>&nbsp;{{ShareData.dropoff}}</p>
-            <div class="contentsMap z-depth-1" id="mapFieldsecond">
+            <p class="small"><span class="ion-ios-location-outline" style="color:#e98b39;"></span>&nbsp;{{ShareData.dropoff}}</p>
+            <div class="contentsMap" id="mapFieldsecond"><i class="ion-record" style="color:#e98b39;"></i>
             </div>
           </div>
 
@@ -261,15 +267,39 @@
             <div class="circle" style="background:#e98b39;"></div>
           </div>
 
-          
-
-          
-
-          
-
-
         </ion-content>
+        <button class="button button-block button-assertive actionButton z-depth-1" ng-click="actionsheet()">宅配依頼</button>
       </ion-view>
+    </script>  
+
+    <script id="sendModal.html" type="text/ng-template">
+      <ion-modal-view>
+        <ion-header-bar>
+          <h1 class="title">宅配情報</h1>
+          <button class="button button-clear button-positive" ng-click="sendModal.hide()">完了</button>
+        </ion-header-bar>
+        <ion-content>
+          <div class="list card">
+            <div class="item item-avatar">
+              <img src="mcfly.jpg">
+              <h2>長浜佑樹&nbsp;様</h2>
+              <p>{{nowTimeCheck}}</p>
+            </div>
+
+            <div class="item item-body">
+              <!--div class="contentsMap" id="modalMap"-->
+              <p>荷物の集荷場所</p>
+              <p>{{ShareData.pickup}}</p>
+              <p>荷物の配達場所</p>
+              <p>{{ShareData.dropoff}}</p>
+              <p>
+                <a href="#" class="subdued">1 Like</a>
+                <a href="#" class="subdued">5 Comments</a>
+              </p>
+            </div>
+          </div>
+        </ion-content>
+      </ion-modal-view>
     </script>  
 
   
@@ -278,6 +308,7 @@
 
 
   <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
+
   </body>
 
 
