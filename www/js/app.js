@@ -51,7 +51,11 @@ angular.module('starter', ['ionic','ngCordova','firebase'])
     }
   });
 })
-.factory('ShareData', function () {
+.factory('ShareData', function() {
+    return {
+    };
+})
+.factory('localData', function() {
     return {
     };
 })
@@ -63,11 +67,11 @@ angular.module('starter', ['ionic','ngCordova','firebase'])
       templateUrl: 'home.html',
       controller: 'mapCtrl'
     })
-    .state('detail', {
+    /*.state('detail', {
       url: '/detail',
       templateUrl: 'detail.html',
       controller: 'detailCtrl'
-    })
+    })*/
     .state('feed', {
       url: '/feed',
       templateUrl: 'feed.html',
@@ -82,8 +86,10 @@ angular.module('starter', ['ionic','ngCordova','firebase'])
   $urlRouterProvider.otherwise("/");
 
 })
-.controller('mapCtrl', function ($scope, ShareData, $ionicModal, $ionicLoading, $cordovaProgress, $cordovaActionSheet) {
-
+.controller('mapCtrl', function ($scope, ShareData, localData, $ionicModal, $ionicLoading, $cordovaProgress, $cordovaActionSheet) {
+    
+    $scope.uniqueData = JSON.parse(localStorage.getItem('storageData'));
+    localData.localStorage = JSON.parse(localStorage.getItem('storageData'));
     //サイドメニュー
     $("#humberger").on("touchend mouseup", function(){
         $("#side-menu").animate({
@@ -331,6 +337,13 @@ angular.module('starter', ['ionic','ngCordova','firebase'])
     $scope.inputbar = modal;
   });
 
+  $ionicModal.fromTemplateUrl('mypage.html', {
+    scope: $scope,
+    animation: 'slide-in-up'
+  }).then(function(modal) {
+    $scope.mypage = modal;
+  });
+
   $scope.$on('modal.shown', function() {
     $("#side-menu").animate({
         left: "-70%"
@@ -339,7 +352,7 @@ angular.module('starter', ['ionic','ngCordova','firebase'])
   });
 
 
-})  
+})
 /*.controller('detailCtrl', function ($scope, ShareData, $cordovaActionSheet, $ionicHistory, $ionicModal) {
 
     //StatusBar.styleLightContent();
@@ -549,16 +562,11 @@ angular.module('starter', ['ionic','ngCordova','firebase'])
 
 
 })
-.controller('accountCtrl', function($scope, ShareData){
+.controller('accountCtrl', function($scope, ShareData, $ionicModal){
 
     $scope.checkId = function(){
         var uniqueId = document.getElementById("uniqueId").value;
-        var stringPassword = document.getElementById("stringPassword").value;    
-        /*if(uniqueId == "" || stringPassword == ""){
-            console.log("j");
-        } else {
-            console.log("d");
-        }*/
+        var stringPassword = document.getElementById("stringPassword").value;
         $.ajax({
             url: 'http://160.16.206.129:3000/users',
             type: 'POST',
@@ -611,9 +619,9 @@ angular.module('starter', ['ionic','ngCordova','firebase'])
                 type: 'GET',
                 dataType: 'json',
                 success: function(responce){
-                    $("#accountInput, #accountTitle").fadeOut();
-                    $("#loginStatusOk").delay(100).fadeIn();
-                    console.log(responce.email + "さんこんにちは");
+                    $scope.mypage.show();
+                    $scope.account.hide();
+                    console.log(responce);
                 },
                 error: function(responce){
                     console.log("error");
@@ -621,6 +629,22 @@ angular.module('starter', ['ionic','ngCordova','firebase'])
                 });
             };
         };
+
+    $scope.nagahama = function(){
+        //localStorage.clear();
+        var storageData = {
+          email: 'yuuki4104453@yahoo.co.jp',
+          name: '長浜佑樹',
+          address: '福岡県福岡市城南区長尾2丁目21-5-505',
+          tel: '080-4317-0187'
+        };
+        localStorage.setItem('storageData', JSON.stringify(storageData));
+    };    
+})
+.controller("loginCtrl", function($scope){
+})
+.controller("mypageCtrl", function($scope, localData){
+    $scope.localData = localData;
 })
 ;
 
